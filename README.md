@@ -18,7 +18,7 @@ CREATE TABLE `news_category` (
 	`url` varchar(255) NOT NULL,
 	`desc` varchar(255),
 	PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 INSERT INTO `news_category` (`name`,`url`, `desc`)
 VALUES
 ('新闻','http://xw.qq.com/simple/s/news/index.htm','新闻栏目')
@@ -36,7 +36,7 @@ CREATE TABLE `news_item` (
 	 PRIMARY KEY (`id`),
      KEY `FK3728B9281A2` (`category_id`),
      CONSTRAINT `FK3728B9281A2` FOREIGN KEY (`category_id`) REFERENCES `news_category` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COLLATE=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 ```
 >
 3. build and run
