@@ -44,7 +44,7 @@ CREATE TABLE `news_item` (
 ```bash
 git clone  https://github.com/whxiyi100829/spider.git
 cd spider
-mvn assembly:assembly -DskipTests
+mvn clean assembly:assembly -DskipTests
 cd target/spider-1.0-SNAPSHOT
 # vim conf/config.properties
 vim conf/config.properties

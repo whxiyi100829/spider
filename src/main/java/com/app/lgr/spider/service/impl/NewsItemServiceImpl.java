@@ -55,7 +55,7 @@ public class NewsItemServiceImpl implements NewsItemService {
         return rs.length;
     }
 
-    public static void main(String[] args) throws ServiceException {
+    /*public static void main(String[] args) throws ServiceException {
         NewsItemService newsItemService = new NewsItemServiceImpl();
         List<NewsItem> newsItems = Lists.newArrayList();
         NewsItem item = new NewsItem();
@@ -65,5 +65,5 @@ public class NewsItemServiceImpl implements NewsItemService {
         newsItems.add(item);
         int rs = newsItemService.batchInsertNewsItem(newsItems);
         System.out.println(rs);
-    }
+    }*/
 }

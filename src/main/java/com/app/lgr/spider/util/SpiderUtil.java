@@ -7,14 +7,8 @@ import com.app.lgr.spider.service.ServiceException;
 import com.app.lgr.spider.service.impl.NewsCategoryServiceImpl;
 import com.app.lgr.spider.service.impl.NewsItemServiceImpl;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Queues;
 import org.apache.commons.lang.time.DateUtils;
 import org.apache.log4j.Logger;
-import org.htmlparser.Parser;
-import org.htmlparser.tags.TableTag;
-import org.htmlparser.util.NodeList;
-import org.htmlparser.util.ParserException;
-import org.htmlparser.visitors.HtmlPage;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -42,8 +36,8 @@ public class SpiderUtil {
 
     /**
      * 保存News Items
-     * @param newsItems
-     * @return
+     * @param newsItems list of NewsItem
+     * @return count of saved
      */
     public static int saveNewsItems(List<NewsItem> newsItems) {
         if (newsItems != null && newsItems.size() > 0) {
@@ -58,13 +52,13 @@ public class SpiderUtil {
     /**
      * 抓取页面信息
      * @param hasExtractLinks 已经抓取过的
-     * @return
-     * @throws SpiderException
+     * @return list of NewsItem
+     * @throws SpiderException SpiderException
      */
     public static List<NewsItem> extractNewsItemsByJsoup(Queue<String> hasExtractLinks) throws SpiderException {
         List<NewsItem> newsItems = Lists.newArrayList();
         //1. 需要抓取的类别信息
-        List<NewsCategory> newsCategories = null;
+        List<NewsCategory> newsCategories;
         try {
             newsCategories = newsCategoryService.queryAllCategories();
         } catch (ServiceException e) {
@@ -130,20 +124,4 @@ public class SpiderUtil {
         return newsItems;
     }
 
-
-    public static void extractByParser(String url) {
-        Parser myParser = null;
-        try {
-            myParser = new Parser(url);
-            myParser.setEncoding("utf-8");
-            HtmlPage visitor = new HtmlPage(myParser);
-            myParser.visitAllNodesWith(visitor);
-            NodeList nodeList = visitor.getBody();
-            String html = nodeList.toHtml();
-            System.out.println(html);
-            TableTag[] tabs = visitor.getTables();
-        } catch (ParserException e) {
-            e.printStackTrace();
-        }
-    }
 }

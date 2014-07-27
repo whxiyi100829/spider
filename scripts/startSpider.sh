@@ -7,7 +7,7 @@ cdto(){
 
 cdto ${APP_HOME}
 
-APP_CONF="${SNAPSHOT_HOME}/conf"
+APP_CONF="${APP_HOME}/conf"
 CLASSPATH="${APP_CONF}"
 for i in "${APP_HOME}"/lib/*.jar
 do

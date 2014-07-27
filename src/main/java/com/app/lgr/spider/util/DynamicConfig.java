@@ -13,7 +13,7 @@ import org.apache.log4j.Logger;
  */
 public class DynamicConfig {
 
-    private static final String CONFIG_FILE = "./conf/config.properties";
+    private static final String CONFIG_FILE = "config.properties";
     private static Logger logger = Logger.getLogger(DynamicConfig.class);
     private static PropertiesConfiguration properties;
 

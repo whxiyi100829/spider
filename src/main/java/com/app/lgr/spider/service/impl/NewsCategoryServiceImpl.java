@@ -5,8 +5,6 @@ import com.app.lgr.spider.service.NewsCategoryService;
 import com.app.lgr.spider.service.ServiceException;
 import com.app.lgr.spider.util.DBUtils;
 import com.google.common.collect.Lists;
-import org.apache.log4j.Logger;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -86,10 +84,10 @@ public class NewsCategoryServiceImpl implements NewsCategoryService {
         return newsCategory;
     }
 
-    public static void main(String[] args) throws Exception {
+    /*public static void main(String[] args) throws Exception {
         NewsCategoryService newsCategoryService = new NewsCategoryServiceImpl();
         List<NewsCategory> list = newsCategoryService.queryAllCategories();
         System.out.println(list);
         System.out.println(newsCategoryService.queryCategoryById(1));
-    }
+    }*/
 }

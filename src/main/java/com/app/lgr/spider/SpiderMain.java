@@ -18,7 +18,6 @@ import java.util.Queue;
 public class SpiderMain {
 
     private static final Logger LOG = Logger.getLogger(SpiderMain.class);
-
     private static Queue<String> hasExtractLinks;
     private static final String CACHE_LINKS_FILE = "links.json";
     private static final int HAS_EXTRACT_LINKS_QUEUE_CAPACITY = 200;
@@ -41,7 +40,7 @@ public class SpiderMain {
         } catch (FileNotFoundException e) {
             LOG.warn("file not found, maybe this is first start. ", e);
         } catch (IOException e) {
-            e.printStackTrace();
+            LOG.error("init error when load crawled links. ", e);
         } finally {
             if (br != null) {
                 try {
@@ -55,11 +54,18 @@ public class SpiderMain {
         Thread popQueueAfterFullThread = new Thread(new Runnable() {
             @Override
             public void run() {
-                for (;;) {
-                    if (hasExtractLinks.size() == HAS_EXTRACT_LINKS_QUEUE_CAPACITY) {
-                        String link = hasExtractLinks.poll();
-                        LOG.info(String.format("pop link(%s) which has extracted.", link));
+                boolean flag = true;
+                while (flag) {
+                    try {
+                        if (hasExtractLinks.size() == HAS_EXTRACT_LINKS_QUEUE_CAPACITY) {
+                            String link = hasExtractLinks.poll();
+                            LOG.info(String.format("pop link(%s) which has extracted.", link));
+                        }
+                    } catch (Exception e) {
+                        LOG.error("pop link error.", e);
+                        flag = false;
                     }
+
                 }
             }
         }, "popQueueThread");
