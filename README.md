@@ -46,9 +46,9 @@ git clone  https://github.com/whxiyi100829/spider.git
 cd spider
 mvn clean assembly:assembly -DskipTests
 cd target/spider-1.0-SNAPSHOT
-# vim conf/config.properties
+# vim conf/config.properties change url、user and password for database
 vim conf/config.properties
-# modify bin/startSpider.sh
+# modify bin/startSpider.sh change APP_HOME path
 vim bin/startSpider.sh
 # run
 sh bin/startSpider.sh
