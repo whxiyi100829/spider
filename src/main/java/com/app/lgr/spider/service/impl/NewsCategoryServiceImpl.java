@@ -2,7 +2,7 @@ package com.app.lgr.spider.service.impl;
 
 import com.app.lgr.spider.model.NewsCategory;
 import com.app.lgr.spider.service.NewsCategoryService;
-import com.app.lgr.spider.service.ServiceException;
+import com.app.lgr.spider.ex.ServiceException;
 import com.app.lgr.spider.util.DBUtils;
 import com.google.common.collect.Lists;
 import java.sql.Connection;

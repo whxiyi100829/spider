@@ -1,5 +1,6 @@
 package com.app.lgr.spider.service;
 
+import com.app.lgr.spider.ex.ServiceException;
 import com.app.lgr.spider.model.NewsItem;
 
 import java.util.List;

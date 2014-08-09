@@ -54,3 +54,7 @@ vim bin/startSpider.sh
 sh bin/startSpider.sh
 ```
 
+4. roadmap
+----------
+2014-08-09 添加下载图片和过滤视频功能
+

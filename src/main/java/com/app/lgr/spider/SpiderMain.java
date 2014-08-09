@@ -1,8 +1,9 @@
 package com.app.lgr.spider;
 
 import com.app.lgr.spider.model.NewsItem;
-import com.app.lgr.spider.util.SpiderException;
-import com.app.lgr.spider.util.SpiderUtil;
+import com.app.lgr.spider.ex.SpiderException;
+import com.app.lgr.spider.service.DownloadThread;
+import com.app.lgr.spider.service.SpiderWorker;
 import com.google.common.collect.Queues;
 import org.apache.log4j.Logger;
 
@@ -14,6 +15,7 @@ import java.util.Queue;
  * User: hzwangxx
  * Date: 14-7-27
  * Time: 11:28
+ * Spider主程序
  */
 public class SpiderMain {
 
@@ -21,6 +23,7 @@ public class SpiderMain {
     private static Queue<String> hasExtractLinks;
     private static final String CACHE_LINKS_FILE = "links.json";
     private static final int HAS_EXTRACT_LINKS_QUEUE_CAPACITY = 200;
+    static SpiderWorker spiderWorker;
 
     private static void init() {
         LOG.info(String.format(".......... init to spider job ........."));
@@ -99,14 +102,18 @@ public class SpiderMain {
                     }
                 }
             }
+            if (spiderWorker.getDownloadFileList().size() > 0) {
+                new Thread(new DownloadThread(spiderWorker.getDownloadFileList())).start();
+            }
             LOG.info("..........shutdown spider........");
         }
     }
 
     private static void startSpider() {
         try {
-            List<NewsItem> newsItems = SpiderUtil.extractNewsItemsByJsoup(hasExtractLinks);
-            int crawlSize = SpiderUtil.saveNewsItems(newsItems);
+            spiderWorker = SpiderWorker.getSpiderWorker();
+            List<NewsItem> newsItems = spiderWorker.extractNewsItemsByJsoup(hasExtractLinks);
+            int crawlSize = spiderWorker.saveNewsItems(newsItems);
             LOG.info(String.format("crawl %d news items", crawlSize));
         } catch (SpiderException e) {
             LOG.error(e);
@@ -116,6 +123,7 @@ public class SpiderMain {
     public static void main(String[] args) throws InterruptedException {
         init();
         startSpider();
+        spiderWorker.cleanWork();
     }
 
 }

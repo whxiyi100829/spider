@@ -1,6 +1,7 @@
 package com.app.lgr.spider.model;
 
 import com.google.common.base.Objects;
+import org.apache.commons.lang.StringUtils;
 
 import java.util.Date;
 
@@ -86,5 +87,9 @@ public class NewsItem {
                 .add("hits", hits)
                 .add("categoryId", categoryId)
                 .toString();
+    }
+
+    public boolean isInvalid() {
+        return StringUtils.isBlank(title) || StringUtils.isBlank(content);
     }
 }

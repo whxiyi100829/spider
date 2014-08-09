@@ -2,15 +2,13 @@ package com.app.lgr.spider.service.impl;
 
 import com.app.lgr.spider.model.NewsItem;
 import com.app.lgr.spider.service.NewsItemService;
-import com.app.lgr.spider.service.ServiceException;
+import com.app.lgr.spider.ex.ServiceException;
 import com.app.lgr.spider.util.DBUtils;
-import com.google.common.collect.Lists;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -31,6 +29,9 @@ public class NewsItemServiceImpl implements NewsItemService {
             conn = DBUtils.getConn();
             pstmt = conn.prepareStatement(INSERT_NEWS_ITEM_SQL);
             for (NewsItem item : newsItems) {
+                if (item.isInvalid()) {
+                    continue;
+                }
                 pstmt.setString(1, item.getTitle());
                 pstmt.setString(2, item.getContent());
                 pstmt.setString(3, item.getSource());

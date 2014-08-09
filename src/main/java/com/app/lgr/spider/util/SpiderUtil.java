@@ -1,127 +1,166 @@
 package com.app.lgr.spider.util;
 
-import com.app.lgr.spider.model.*;
-import com.app.lgr.spider.service.NewsCategoryService;
-import com.app.lgr.spider.service.NewsItemService;
-import com.app.lgr.spider.service.ServiceException;
-import com.app.lgr.spider.service.impl.NewsCategoryServiceImpl;
-import com.app.lgr.spider.service.impl.NewsItemServiceImpl;
-import com.google.common.collect.Lists;
+import com.google.common.collect.Queues;
+import org.apache.commons.lang.time.DateFormatUtils;
 import org.apache.commons.lang.time.DateUtils;
-import org.apache.log4j.Logger;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.text.ParseException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Date;
-import java.util.List;
 import java.util.Queue;
+import java.util.UUID;
+import java.util.concurrent.*;
 
 /**
  * User: hzwangxx
- * Date: 14-7-26
- * Time: 21:07
+ * Date: 14-8-9
+ * Time: 10:01
  */
 public class SpiderUtil {
 
-    private static NewsCategoryService newsCategoryService  = new NewsCategoryServiceImpl();
-    private static NewsItemService newsItemService = new NewsItemServiceImpl();
+    private SpiderUtil() {
 
-    private static final Logger LOG = Logger.getLogger(SpiderUtil.class);
-
-    private  static  final String[] DATE_FORMATS = {"yyyy-MM-dd", "yyyy-MM-dd HH:mm:ss"};
-
-    /**
-     * 保存News Items
-     * @param newsItems list of NewsItem
-     * @return count of saved
-     */
-    public static int saveNewsItems(List<NewsItem> newsItems) {
-        if (newsItems != null && newsItems.size() > 0) {
-            try {
-                return newsItemService.batchInsertNewsItem(newsItems);
-            } catch (ServiceException e) {
-                LOG.error("batch insert error.", e);
-            }
-        }
-        return 0;
     }
+
     /**
-     * 抓取页面信息
-     * @param hasExtractLinks 已经抓取过的
-     * @return list of NewsItem
-     * @throws SpiderException SpiderException
+     * 创建目录，如果文件，则删除重新建目录
+     * @param dir 待创建的目录
+     * @return 成功返回true，失败false
      */
-    public static List<NewsItem> extractNewsItemsByJsoup(Queue<String> hasExtractLinks) throws SpiderException {
-        List<NewsItem> newsItems = Lists.newArrayList();
-        //1. 需要抓取的类别信息
-        List<NewsCategory> newsCategories;
+    public static boolean createDir(String dir) {
+        boolean success;
+        File file = new File(dir);
         try {
-            newsCategories = newsCategoryService.queryAllCategories();
-        } catch (ServiceException e) {
-            LOG.error("query categories error.", e);
-            throw new SpiderException("extract news item error. ", e);
-        }
-
-        for (NewsCategory newsCategory : newsCategories) {
-            //2. 取新闻Item的链接
-            Document linkDoc;
-            try {
-                linkDoc = Jsoup.connect(newsCategory.getUrl()).get();
-            } catch (IOException e) {
-                LOG.error(String.format("crawl url(%s) error.", newsCategory.getUrl()), e);
-                continue;
+            if (file.exists()) {
+                if (file.isFile()) {  //如果文件，则删除重新建目录
+                    file.delete();
+                    success = file.mkdirs();
+                } else {
+                    success = true;
+                }
+            } else {
+                success = file.mkdirs();
             }
-            Elements newsLinks = linkDoc.select(".pubbox ul li a");
-            for (Element element : newsLinks) {
-                String newsUrl = element.attr("href");
-                if (hasExtractLinks.contains(newsUrl)) {
-                    break;
-                }
-
-                //3. 抓取页面信息
-                Document newsDoc;
-                try {
-                    newsDoc = Jsoup.connect(newsUrl).get();
-                } catch (IOException e) {
-                    LOG.error(String.format("crawl url(%s) error.", newsUrl), e);
-                    continue;
-                }
-                Elements newsContent = newsDoc.select(".content");
-                NewsItem item = new NewsItem();
-                // 3.1 title
-                Elements globalTitle = newsContent.select("#global_title");
-                item.setTitle(globalTitle.text());
-
-                // 3.2 date & source
-                Elements globalMeta = newsContent.select("#global_meta");
-                String dateStr = globalMeta.select(".content-info-time").text();
-                String source = globalMeta.select(".content-info-source").text();
-                try {
-                    item.setCreateTime(DateUtils.parseDate(dateStr, DATE_FORMATS));
-                } catch (ParseException e) {
-                    LOG.warn("parse date error for " + dateStr);
-                    item.setCreateTime(new Date());
-                }
-                item.setSource(source);
-
-                // 3.3 content
-                Elements content = newsContent.select("#content");
-                item.setContent(content.html());
-
-                item.setHits(0l);
-                item.setCategoryId(newsCategory.getId());
-
-                newsItems.add(item);
-
-                //4. 缓存页面链接
-                hasExtractLinks.offer(newsUrl);
-            }
+        } catch (Exception e) {
+           throw new RuntimeException("error.", e);
         }
-        return newsItems;
+        return success;
     }
 
+    /**
+     * 下载文件，并存到本地
+     * @param srcUrl network url
+     * @param fileName  local filePath
+     * @return  success return true, otherwise false
+     */
+    public static boolean downloadFile(String srcUrl, String fileName) {
+        boolean success = false;
+        InputStream in = null;
+        FileOutputStream fos = null;
+        try {
+            URL url = new URL(srcUrl);
+            in = url.openStream();
+            fos = new FileOutputStream(fileName);
+            int b;
+            while ((b = in.read()) != -1) {
+                fos.write(b);
+            }
+            success = true;
+        } catch (MalformedURLException e) {
+            throw new RuntimeException("new URL error.", e);
+        } catch (IOException e) {
+            throw new RuntimeException("io exception.", e);
+        } finally {
+            try {
+                if (fos != null) {
+                    fos.close();
+                }
+                if (in != null) {
+                    in.close();
+                }
+            } catch (IOException e) {
+                throw new RuntimeException("close stream error. ", e);
+            }
+
+        }
+        return success;
+
+    }
+
+    public static String uuid() {
+        return UUID.randomUUID().toString().replace("-", "");
+    }
+
+    public static void main(String[] args) throws InterruptedException {
+        /*String resDir = "/Users/apple/tmp/xxxx/xxx/";
+        String uuid = uuid();
+        String url = "http://pnewsapp.tc.qq.com/newsapp_bt/0/2k43fhac7iw1406386892/640";
+        System.out.println(SpiderUtil.createDir(resDir));
+        System.out.println(uuid);
+        System.out.println(downloadFile(url, resDir + uuid + ".jpg"));*/
+        boolean tag = false;
+        final BlockingQueue<String> queue = Queues.newArrayBlockingQueue(1000);
+
+        int threadCount = 5;
+        final ExecutorService downloadExecutor = Executors.newFixedThreadPool(DynamicConfig.getInt("download.thread.num", threadCount));
+        for(int i=0; i<threadCount; i++) {
+            downloadExecutor.submit(new DownloadTask(queue));
+        }
+
+        Thread t = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                for (int i=0; i<1000; i++) {
+                    String temp = String.format("%4d", i);
+                    System.out.println("offer " + temp);
+                    try {
+                        queue.put(temp);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+            }
+        });
+        t.setDaemon(true);
+        t.start();
+        downloadExecutor.shutdown();
+        /*
+        downloadExecutor.shutdown();
+        if (!downloadExecutor.awaitTermination(3, TimeUnit.SECONDS)) {
+                System.exit(0);
+        }*/
+
+
+    }
+
+
+    private static class DownloadTask implements Runnable{
+        private BlockingQueue<String> queue;
+
+        private DownloadTask(final BlockingQueue<String> queue) {
+            this.queue = queue;
+        }
+
+        @Override
+        public void run() {
+            boolean flag = true;
+            while (flag) {
+                try {
+                    String temp = queue.poll(5, TimeUnit.SECONDS);
+                    if (temp == null) {
+                        break;
+                    }
+                    System.out.println(Thread.currentThread() + " poll " + temp);
+                } catch (InterruptedException e) {
+                    System.out.println("interrupted.");
+                    flag = false;
+                }
+            }
+        }
+    }
 }

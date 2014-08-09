@@ -1,4 +1,4 @@
-package com.app.lgr.spider.service;
+package com.app.lgr.spider.ex;
 
 /**
  * User: hzwangxx
