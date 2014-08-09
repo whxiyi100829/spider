@@ -39,6 +39,7 @@ CREATE TABLE `news_item` (
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 ```
 >
+
 3. build and run
 -------------
 ```bash
